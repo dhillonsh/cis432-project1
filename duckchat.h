@@ -39,7 +39,7 @@ typedef int text_t;
 
 /* This structure is used for a generic request type, to the server. */
 struct request {
-        request_t req_type;
+	request_t req_type;
 } packed;
 
 /* Once we've looked at req_type, we then cast the pointer to one of
@@ -47,46 +47,46 @@ struct request {
  * corresponds with one of the REQ_ codes above. */
 
 struct request_login {
-        request_t req_type; /* = REQ_LOGIN */
-        char req_username[USERNAME_MAX];
+	request_t req_type; /* = REQ_LOGIN */
+	char req_username[USERNAME_MAX];
 } packed;
 
 struct request_logout {
-        request_t req_type; /* = REQ_LOGOUT */
+	request_t req_type; /* = REQ_LOGOUT */
 } packed;
 
 struct request_join {
-        request_t req_type; /* = REQ_JOIN */
-        char req_channel[CHANNEL_MAX]; 
+	request_t req_type; /* = REQ_JOIN */
+	char req_channel[CHANNEL_MAX];
 } packed;
 
 struct request_leave {
-        request_t req_type; /* = REQ_LEAVE */
-        char req_channel[CHANNEL_MAX]; 
+	request_t req_type; /* = REQ_LEAVE */
+	char req_channel[CHANNEL_MAX];
 } packed;
 
 struct request_say {
-        request_t req_type; /* = REQ_SAY */
-        char req_channel[CHANNEL_MAX]; 
-        char req_text[SAY_MAX];
+	request_t req_type; /* = REQ_SAY */
+	char req_channel[CHANNEL_MAX];
+	char req_text[SAY_MAX];
 } packed;
 
 struct request_list {
-        request_t req_type; /* = REQ_LIST */
+	request_t req_type; /* = REQ_LIST */
 } packed;
 
 struct request_who {
-        request_t req_type; /* = REQ_WHO */
-        char req_channel[CHANNEL_MAX]; 
+	request_t req_type; /* = REQ_WHO */
+	char req_channel[CHANNEL_MAX];
 } packed;
 
 struct request_keep_alive {
-        request_t req_type; /* = REQ_KEEP_ALIVE */
+	request_t req_type; /* = REQ_KEEP_ALIVE */
 } packed;
 
 /* This structure is used for a generic text type, to the client. */
 struct text {
-        text_t txt_type;
+	text_t txt_type;
 } packed;
 
 /* Once we've looked at txt_type, we then cast the pointer to one of
@@ -94,38 +94,38 @@ struct text {
  * corresponds with one of the TXT_ codes above. */
 
 struct text_say {
-        text_t txt_type; /* = TXT_SAY */
-        char txt_channel[CHANNEL_MAX];
-        char txt_username[USERNAME_MAX];
-        char txt_text[SAY_MAX];
+	text_t txt_type; /* = TXT_SAY */
+	char txt_channel[CHANNEL_MAX];
+	char txt_username[USERNAME_MAX];
+	char txt_text[SAY_MAX];
 } packed;
 
 /* This is a substructure used by struct text_list. */
 struct channel_info {
-        char ch_channel[CHANNEL_MAX];
+	char ch_channel[CHANNEL_MAX];
 } packed;
 
 struct text_list {
-        text_t txt_type; /* = TXT_LIST */
-        int txt_nchannels;
-        struct channel_info txt_channels[0]; // May actually be more than 0
+	text_t txt_type; /* = TXT_LIST */
+	int txt_nchannels;
+	struct channel_info txt_channels[0]; // May actually be more than 0
 } packed;
 
 /* This is a substructure used by text_who. */
 struct user_info {
-        char us_username[USERNAME_MAX];
+	char us_username[USERNAME_MAX];
 };
 
 struct text_who {
-        text_t txt_type; /* = TXT_WHO */
-        int txt_nusernames;
-        char txt_channel[CHANNEL_MAX]; // The channel requested
-        struct user_info txt_users[0]; // May actually be more than 0
+	text_t txt_type; /* = TXT_WHO */
+	int txt_nusernames;
+	char txt_channel[CHANNEL_MAX]; // The channel requested
+	struct user_info txt_users[0]; // May actually be more than 0
 } packed;
 
 struct text_error {
-        text_t txt_type; /* = TXT_ERROR */
-        char txt_error[SAY_MAX]; // Error message
+	text_t txt_type; /* = TXT_ERROR */
+	char txt_error[SAY_MAX]; // Error message
 };
 
 #endif

@@ -1,8 +1,6 @@
 CC=g++
 
-#CFLAGS=-Wall -W -g -Werror
-CFLAGS=-W -g
-
+CFLAGS=-Wall -W -g -Werror
 
 all: client server
 
@@ -14,5 +12,3 @@ server: server.c
 
 clean:
 	rm -f client server *.o
-	rm -f client.c
-
