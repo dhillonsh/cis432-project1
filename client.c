@@ -63,7 +63,7 @@ char active_channel[CHANNEL_MAX] = "Common";
 void set_active_channel(char *channel_name) {
 	char error_message[BUFFER_SIZE];
 
-	strncpy(active_channel, channel_name, CHANNEL_MAX);
+	memmove(active_channel, channel_name, CHANNEL_MAX);
 	snprintf(error_message, BUFFER_SIZE, "You are now active in the channel: %s", channel_name);
 	log_error(error_message);
 }
@@ -120,7 +120,12 @@ void log_error(char *error_message) {
 
 /* Socket Handlers */
 int server_write(void *packet, int packet_size) {
-	return sendto(server_socket, packet, packet_size, 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
+	int bytes = sendto(server_socket, packet, packet_size, 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
+	if(bytes == -1) {
+		char error_message[] = "Unknown command";
+		log_error(error_message);
+	}
+	return bytes;
 }
 
 void server_connect(char *server_ip, uint16_t server_port) {
@@ -183,8 +188,9 @@ int handle_send(char *input) {
 int handle_send_login(char *username) {
 	int write_result;
 	struct request_login *packet = (struct request_login *)malloc(sizeof(struct request_login));
+	memset(packet, 0, sizeof(struct request_login));
 
-	packet->req_type = htonl(REQ_LOGIN);
+	packet->req_type = REQ_LOGIN;
 	strncpy(packet->req_username, username, USERNAME_MAX - 1);
 
 	write_result = server_write(packet, sizeof(struct request_login));
@@ -195,8 +201,9 @@ int handle_send_login(char *username) {
 int handle_send_logout() {
 	int write_result;
 	struct request_logout *packet = (struct request_logout *)malloc(sizeof(struct request_logout));
+	memset(packet, 0, sizeof(struct request_logout));
 
-	packet->req_type = htonl(REQ_LOGOUT);
+	packet->req_type = REQ_LOGOUT;
 
 	write_result = server_write(packet, sizeof(struct request_logout));
 	free(packet);
@@ -210,8 +217,6 @@ int handle_send_logout() {
 	it_destroy(it);
 	ll_destroy(joined_channels, NULL);
 
-	free(tmp_channel);
-
 	is_alive = 0;
 	return write_result;
 }
@@ -219,8 +224,9 @@ int handle_send_logout() {
 int handle_send_join(char *channel_name) {
 	int write_result;
 	struct request_join *packet = (struct request_join *)malloc(sizeof(struct request_join));
+	memset(packet, 0, sizeof(struct request_join));
 
-	packet->req_type = htonl(REQ_JOIN);
+	packet->req_type = REQ_JOIN;
 	strncpy(packet->req_channel, channel_name, CHANNEL_MAX - 1);
 
 	write_result = server_write(packet, sizeof(struct request_join));
@@ -245,9 +251,15 @@ int handle_send_join(char *channel_name) {
 
 int handle_send_leave(char *channel_name) {
 	int write_result = 0;
-	struct request_leave *packet = (struct request_leave *)malloc(sizeof(struct request_leave));
 
-	packet->req_type = htonl(REQ_LEAVE);
+	if(in_chat(channel_name) == 0) {
+		return 0;
+	}
+
+	struct request_leave *packet = (struct request_leave *)malloc(sizeof(struct request_leave));
+	memset(packet, 0, sizeof(struct request_leave));
+
+	packet->req_type = REQ_LEAVE;
 	strncpy(packet->req_channel, channel_name, CHANNEL_MAX - 1);
 	write_result = server_write(packet, sizeof(struct request_leave));
 	free(packet);
@@ -262,6 +274,7 @@ int handle_send_leave(char *channel_name) {
 			it_next(it, (void **)tmp_channel);
 
 			if(strcmp(*tmp_channel, channel_name) == 0) {
+				free(*tmp_channel);
 				ll_remove(joined_channels, it_index, (void **)tmp_channel);
 				break;
 			}
@@ -281,8 +294,9 @@ int handle_send_say(char *channel_name, char *text) {
 	}
 
 	struct request_say *packet = (struct request_say *)malloc(sizeof(struct request_say));
+	memset(packet, 0, sizeof(struct request_say));
 
-	packet->req_type = htonl(REQ_SAY);
+	packet->req_type = REQ_SAY;
 	strncpy(packet->req_channel, channel_name, CHANNEL_MAX - 1);
 	strncpy(packet->req_text, text, SAY_MAX - 1);
 
@@ -294,8 +308,9 @@ int handle_send_say(char *channel_name, char *text) {
 int handle_send_list() {
 	int write_result;
 	struct request_list *packet = (struct request_list *)malloc(sizeof(struct request_list));
+	memset(packet, 0, sizeof(struct request_list));
 
-	packet->req_type = htonl(REQ_LIST);
+	packet->req_type = REQ_LIST;
 
 	write_result = server_write(packet, sizeof(struct request_list));
 	free(packet);
@@ -305,8 +320,9 @@ int handle_send_list() {
 int handle_send_who(char *channel_name) {
 	int write_result;
 	struct request_who *packet = (struct request_who *)malloc(sizeof(struct request_who));
+	memset(packet, 0, sizeof(struct request_who));
 
-	packet->req_type = htonl(REQ_WHO);
+	packet->req_type = REQ_WHO;
 	strncpy(packet->req_channel, channel_name, CHANNEL_MAX - 1);
 
 	write_result = server_write(packet, sizeof(struct request_who));
@@ -332,19 +348,31 @@ int handle_send_switch(char *channel_name) {
 
 
 /* Server->Client Functions */
-void handle_recv(struct text *packet) {
-	switch(ntohl(packet->txt_type)) {
+void handle_recv(struct text *packet, int packet_size) {
+	switch(packet->txt_type) {
 		case TXT_SAY:
-			handle_recv_say((struct text_say *) packet);
+			if(sizeof(struct text_say) != packet_size) {
+				char error_message[] = "Received invalid request_login packet from client.";
+				log_error(error_message);
+			} else handle_recv_say((struct text_say *) packet);
 			return;
 		case TXT_LIST:
-			handle_recv_list((struct text_list *) packet);
+			if(sizeof(struct text_list) != packet_size) {
+				char error_message[] = "Received invalid request_login packet from client.";
+				log_error(error_message);
+			} else handle_recv_list((struct text_list *) packet);
 			return;
 		case TXT_WHO:
-			handle_recv_who((struct text_who *) packet);
+			if(sizeof(struct text_who) != packet_size) {
+				char error_message[] = "Received invalid request_login packet from client.";
+				log_error(error_message);
+			} else handle_recv_who((struct text_who *) packet);
 			return;
 		case TXT_ERROR:
-			handle_recv_error((struct text_error *) packet);
+			if(sizeof(struct text_error) != packet_size) {
+				char error_message[] = "Received invalid request_login packet from client.";
+				log_error(error_message);
+			} else handle_recv_error((struct text_error *) packet);
 			return;
 		default:
 			char error_message[] = "Received unknown packet from server.";
@@ -480,6 +508,8 @@ int main(int argc, char** argv) {
 	FD_SET(server_socket, master);
 
 	print_prompt();
+	int packet_size;
+
 	while(is_alive == 1) {
 		fflush(stdin);
 
@@ -492,8 +522,8 @@ int main(int argc, char** argv) {
 
 		if(FD_ISSET(STDIN_FILENO, dup_fd_set)) read_input();
 		else if(FD_ISSET(server_socket, dup_fd_set)) {
-			if(recvfrom(server_socket, from_buffer, sizeof from_buffer, 0, &from_socket, &from_socket_len) > 0)
-				handle_recv((struct text *)from_buffer);
+			if((packet_size = recvfrom(server_socket, from_buffer, sizeof from_buffer, 0, &from_socket, &from_socket_len)) > 0)
+				handle_recv((struct text *)from_buffer, packet_size);
 		}
 	}
 
