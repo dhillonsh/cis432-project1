@@ -188,7 +188,7 @@ void handle_recv_logout(struct sockaddr_in *client_addr, struct request_logout *
 }
 
 void handle_recv_join(struct sockaddr_in *client_addr, struct request_join *in_packet) {
-	char client_error[SAY_MAX];
+	//char client_error[SAY_MAX];
 	char error_message[BUFFER_SIZE];
 	char *channel_name = strdup(in_packet->req_channel);
 	uint16_t *client_port = (uint16_t *)calloc(1, sizeof(uint16_t));
@@ -277,7 +277,7 @@ void handle_recv_leave(struct sockaddr_in *client_addr, struct request_leave *in
 }
 
 void handle_recv_say(struct sockaddr_in *client_addr, struct request_say *in_packet) {
-	char client_error[SAY_MAX];
+	//char client_error[SAY_MAX];
 	char error_message[BUFFER_SIZE];
 	uint16_t client_port = htons(client_addr->sin_port);
 	int found_in_map = 0;
@@ -346,7 +346,7 @@ void handle_recv_say(struct sockaddr_in *client_addr, struct request_say *in_pac
 void handle_recv_list(struct sockaddr_in *client_addr, struct request_list *in_packet) {
 	UNUSED(in_packet);
 
-	char client_error[SAY_MAX];
+	//char client_error[SAY_MAX];
 	char error_message[BUFFER_SIZE];
 	uint16_t client_port = htons(client_addr->sin_port);
 
@@ -381,7 +381,7 @@ void handle_recv_list(struct sockaddr_in *client_addr, struct request_list *in_p
 }
 
 void handle_recv_who(struct sockaddr_in *client_addr, struct request_who *in_packet) {
-	char client_error[SAY_MAX];
+	//char client_error[SAY_MAX];
 	char error_message[BUFFER_SIZE];
 	uint16_t client_port = htons(client_addr->sin_port);
 
