@@ -465,6 +465,11 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
+	if(strlen(argv[3]) >= USERNAME_MAX) {
+		printf("Username cannot be longer than %d characters.\n", USERNAME_MAX - 1);
+		return 1;
+	}
+
 	/* Setup the socket and verify connectivity */
 	char *server_ip = argv[1];
 	uint16_t server_port = (uint16_t)(strtol(argv[2], &end, 10));
