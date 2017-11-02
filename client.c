@@ -350,7 +350,7 @@ int handle_send_switch(char *channel_name) {
 /* Server->Client Functions */
 void handle_recv(struct text *packet, int packet_size) {
 	printf("Packet size: %d\n", packet_size);
-	printf("Real size: %d\n", sizeof(struct text_list));
+	printf("Real size: %lu\n", sizeof(struct text_list));
 	switch(packet->txt_type) {
 		case TXT_SAY:
 			if(sizeof(struct text_say) != packet_size) {
@@ -370,8 +370,8 @@ struct text_list {
 	struct channel_info txt_channels[0];
 } packed;
 */
-printf("text_list size: %d\n", sizeof(text_list));
-printf("channel_info size: %d\n", sizeof(channel_info));
+printf("text_list size: %lu\n", sizeof(text_list));
+printf("channel_info size: %lu\n", sizeof(channel_info));
 			if(sizeof(struct text_list) != packet_size) {
 				char error_message[] = "Received invalid packet from server.";
 				log_error(error_message);
