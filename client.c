@@ -359,26 +359,13 @@ void handle_recv(struct text *packet, int packet_size) {
 			} else handle_recv_say((struct text_say *) packet);
 			return;
 		case TXT_LIST:
-/*
-		struct channel_info {
-	char ch_channel[CHANNEL_MAX];
-} packed;
-
-struct text_list {
-	text_t txt_type;
-	int txt_nchannels;
-	struct channel_info txt_channels[0];
-} packed;
-*/
-printf("text_list size: %lu\n", sizeof(text_list));
-printf("channel_info size: %lu\n", sizeof(channel_info));
-			if(sizeof(struct text_list) != packet_size) {
+			if((packet_size - sizeof(struct text_list)) % sizeof(channel_info) != 0) {
 				char error_message[] = "Received invalid packet from server.";
 				log_error(error_message);
 			} else handle_recv_list((struct text_list *) packet);
 			return;
 		case TXT_WHO:
-			if(sizeof(struct text_who) != packet_size) {
+			if((packet_size - sizeof(struct text_who)) % sizeof(user_info) != 0) {
 				char error_message[] = "Received invalid packet from server.";
 				log_error(error_message);
 			} else handle_recv_who((struct text_who *) packet);
