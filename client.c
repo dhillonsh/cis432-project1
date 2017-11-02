@@ -349,8 +349,6 @@ int handle_send_switch(char *channel_name) {
 
 /* Server->Client Functions */
 void handle_recv(struct text *packet, int packet_size) {
-	printf("Packet size: %d\n", packet_size);
-	printf("Real size: %lu\n", sizeof(struct text_list));
 	switch(packet->txt_type) {
 		case TXT_SAY:
 			if(sizeof(struct text_say) != packet_size) {
